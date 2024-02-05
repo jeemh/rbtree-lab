@@ -212,18 +212,6 @@ node_t *rbtree_max(const rbtree *t)
   return current;
 }
 
-// 노드 u를 노드 v로 대체
-void rb_transplant(rbtree *t, node_t *u, node_t *v)
-{
-  if (u->parent == t->nil)
-    t->root = v;
-  else if (u == u->parent->left)
-    u->parent->left = v;
-  else
-    u->parent->right = v;
-  v->parent = u->parent;
-}
-
 void rbtree_erase_fixup(rbtree *t, node_t *x)
 {
   while (x != t->root && x->color == RBTREE_BLACK)
