@@ -13,7 +13,7 @@ typedef struct node_t {
   struct node_t *parent, *left, *right;
 } node_t;
 
-typedef struct {
+typedef struct rbtree {
   node_t *root;
   node_t *nil;  // for sentinel
 } rbtree;
