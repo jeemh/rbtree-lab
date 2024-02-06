@@ -214,11 +214,13 @@ node_t *rbtree_max(const rbtree *t)
 
 void rbtree_erase_fixup(rbtree *t, node_t *x)
 {
+  //각 case는 알고리즘책 331pg 참고
   while (x != t->root && x->color == RBTREE_BLACK)
   {
     // CASE 1 ~ 4 : LEFT CASE
     if (x == x->parent->left)
     {
+      //w는 형제노드
       node_t *w = x->parent->right;
 
       // CASE 1 : x의 형제 w가 적색인 경우
@@ -310,19 +312,19 @@ int rbtree_erase(rbtree *t, node_t *delete)
 {
   node_t *remove; // 트리에서 없어질 노드
   node_t *remove_parent;
-  node_t *replace_node; // 대체노드에 연결된 노드
+  node_t *remove_child; // 대체노드에 연결된 노드
   int is_black, is_left;
 
   // 자식이 없거나 하나만 있는 경우
   if (delete->left == t->nil)
   {
     remove = delete;
-    replace_node = remove->right;
+    remove_child = remove->right;
   }
   else if (delete->right == t->nil)
   {
     remove = delete;
-    replace_node = remove->left;
+    remove_child = remove->left;
   }
   // 자식이 둘인 경우: delete의 키를 후계자 노드의 키값으로 대체, 노드의 색은 delete의 색 유지
   else
@@ -333,7 +335,7 @@ int rbtree_erase(rbtree *t, node_t *delete)
     remove_subtree->nil = t->nil;        // rbtree_min의 반복문 종료조건을 만족해주기 위해서
     remove = rbtree_min(remove_subtree); // 오른쪽에 min값
     // remove = rbtree_max(remove_subtree); //왼쪽에 max값
-    replace_node = remove->right; // 대체할 노드: 지워질 노드인 후계자는 항상 왼쪽 자식이 없기 때문에, 자식이 있다면 오른쪽 자식 하나뿐임
+    remove_child = remove->right; // 대체할 노드: 지워질 노드인 후계자는 항상 왼쪽 자식이 없기 때문에, 자식이 있다면 오른쪽 자식 하나뿐임
     delete->key = remove->key;    // delete의 키를 후계자 노드의 키값으로 대체 (색은 변경 X)
     free(remove_subtree);
   }
@@ -342,7 +344,7 @@ int rbtree_erase(rbtree *t, node_t *delete)
   // remove 노드가 루트인 경우
   if (remove == t->root)
   {
-    t->root = replace_node;        // 대체할 노드를 트리의 루트로 지정
+    t->root = remove_child;        // 대체할 노드를 트리의 루트로 지정
     t->root->color = RBTREE_BLACK; // 루트 노드는 항상 BLACK
     free(remove);
     return 0; // 불균형 복구 함수 호출 불필요 (제거 전 트리에 노드가 하나 혹은 두개이므로 불균형이 발생하지 않음)
@@ -354,16 +356,16 @@ int rbtree_erase(rbtree *t, node_t *delete)
 
   // remove의 자식노드와 부모노드를 연결
   if (is_left) // remove가 왼쪽 자식이었을 경우: remove 부모의 왼쪽에 이어주기
-    remove_parent->left = replace_node;
+    remove_parent->left = remove_child;
   else // remove가 오른쪽 자식이었을 경우: remove 부모의 오른쪽에 이어주기
-    remove_parent->right = replace_node;
+    remove_parent->right = remove_child;
 
-  replace_node->parent = remove_parent;
+  remove_child->parent = remove_parent;
   free(remove);
 
   // remove 노드가 검정 노드인 경우 불균형 복구 함수 호출
   if (is_black)
-    rbtree_erase_fixup(t, replace_node);
+    rbtree_erase_fixup(t, remove_child);
   return 0;
 }
 
